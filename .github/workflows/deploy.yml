@@ -1,0 +1,33 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      BACKEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/backend-app
+      FRONTEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/frontend-app
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Build Backend Docker image
+        run: |
+          docker build -f Dockerfile-Backend -t $BACKEND_IMAGE:latest .
+          docker push $BACKEND_IMAGE:latest
+
+      - name: Build Frontend Docker image
+        run: |
+          docker build -f Dockerfile-Frontend -t $FRONTEND_IMAGE:latest .
+          docker push $FRONTEND_IMAGE:latest

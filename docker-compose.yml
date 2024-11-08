@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile-Backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+#      - mongo
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../Dockerfile-Frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL}
+      - NODE_OPTIONS=--max-old-space-size=4096  # Setting Node.js memory limit
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+
+  postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile-PostgreSQL
+    ports:
+      - "5432:5432"  # Проброс порту 5432 всередині контейнера на 5433 на хості
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+#  mongo:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile-MongoDB
+#    ports:
+#      - "27017:27017"
+#    volumes:
+#      - mongo_data:/data/db
+#    networks:
+#      - app-network
+
+
+  redis:
+    build:
+      context: .
+      dockerfile: Dockerfile-Redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+
+volumes:
+  postgres_data:
+  mongo_data:
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,0 +1,21 @@
+# Stage 1: Build the application using Gradle
+FROM gradle:7.2-jdk11 AS build
+
+WORKDIR /app
+
+# Copy the source code and Gradle files
+COPY . .
+
+# Build the application and generate a WAR file (skip tests for faster build)
+RUN gradle build -x test --no-daemon
+
+# Stage 2: Deploy the WAR file on Tomcat
+FROM tomcat:9.0.50-jdk11-openjdk
+
+# Clean the default webapps folder to deploy your application cleanly
+RUN rm -rf /usr/local/tomcat/webapps/*
+
+# Copy the WAR file generated in the build stage to the Tomcat webapps directory
+COPY --from=build /app/build/libs/*.war /usr/local/tomcat/webapps/your-app.war
+
+EXPOSE 8080

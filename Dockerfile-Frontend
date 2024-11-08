@@ -1,0 +1,20 @@
+# Вказуємо базовий образ Node.js
+FROM node:14
+
+# Встановлюємо робочу директорію
+WORKDIR /app
+
+# Копіюємо package.json та package-lock.json з папки frontend
+COPY frontend/package*.json ./
+
+# Встановлюємо залежності
+RUN npm install
+
+# Копіюємо решту файлів проєкту з папки frontend
+COPY frontend/. .
+
+# Відкриваємо порт для фронтенд серверу
+EXPOSE 3000
+
+# Запускаємо сервер
+CMD ["node", "--max-old-space-size=4096", "node_modules/.bin/react-scripts", "start"]
