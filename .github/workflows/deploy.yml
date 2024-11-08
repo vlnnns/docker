@@ -1,4 +1,4 @@
-name: Build and Push Docker Images
+name: Deploy to DockerHub
 
 on:
   push:
@@ -9,25 +9,23 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
-    env:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-      BACKEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/backend-app
-      FRONTEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/frontend-app
-
     steps:
+      # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Log in to DockerHub
       - name: Log in to DockerHub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Build Backend Docker image
+      # Build and push Backend image
+      - name: Build and push Backend Docker image
         run: |
-          docker build -f Dockerfile-Backend -t $BACKEND_IMAGE:latest .
-          docker push $BACKEND_IMAGE:latest
+          docker build -f Dockerfile-Backend -t ${{ secrets.DOCKER_USERNAME }}/backend:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest
 
-      - name: Build Frontend Docker image
+      # Build and push Frontend image
+      - name: Build and push Frontend Docker image
         run: |
-          docker build -f Dockerfile-Frontend -t $FRONTEND_IMAGE:latest .
-          docker push $FRONTEND_IMAGE:latest
+          docker build -f Dockerfile-Frontend -t ${{ secrets.DOCKER_USERNAME }}/frontend:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
